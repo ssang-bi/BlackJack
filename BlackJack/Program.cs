@@ -38,46 +38,139 @@ namespace BlackJack
                 list[n] = value;
             }
         }
+        public static int Score(card card, int score)
+        {
+            switch (card)
+            {
+                case (card.Ace):
+                    if (score <= 10) score += 11;
+                    else score += 1;
+                    break;
+                case (card.Two):
+                    score += 2;
+                    break;
+                case (card.Three):
+                    score += 3;
+                    break;
+                case (card.Four):
+                    score += 4;
+                    break;
+                case (card.Five):
+                    score += 5;
+                    break;
+                case (card.Six):
+                    score += 6;
+                    break;
+                case (card.Seven):
+                    score += 7;
+                    break;
+                case (card.Eight):
+                    score += 8;
+                    break;
+                case (card.Nine):
+                    score += 9;
+                    break;
+                case (card.Ten):
+                    score += 10;
+                    break;
+                case (card.Jack):
+                    score += 10;
+                    break;
+                case (card.Queen):
+                    score += 10;
+                    break;
+                case (card.King):
+                    score += 10;
+                    break;
+            }
+            return score;
+        }
     }
     class CardDeck
     {
-        public List<card> deck = new List<card>();
+        public List<card> Deck = new List<card>();
         public Stack<card> GameDeck = new Stack<card>();
-        public void Build()
+        public void Create()  // Create game Deck with stack
         {
             for (int i = 0; i < 4; i++)
             {
-                deck.Add(card.Ace);
-                deck.Add(card.Two);
-                deck.Add(card.Three);
-                deck.Add(card.Four);
-                deck.Add(card.Five);
-                deck.Add(card.Six);
-                deck.Add(card.Seven);
-                deck.Add(card.Eight);
-                deck.Add(card.Nine);
-                deck.Add(card.Ten);
-                deck.Add(card.Jack);
-                deck.Add(card.Queen);
-                deck.Add(card.King);
+                Deck.Add(card.Ace);
+                Deck.Add(card.Two);
+                Deck.Add(card.Three);
+                Deck.Add(card.Four);
+                Deck.Add(card.Five);
+                Deck.Add(card.Six);
+                Deck.Add(card.Seven);
+                Deck.Add(card.Eight);
+                Deck.Add(card.Nine);
+                Deck.Add(card.Ten);
+                Deck.Add(card.Jack);
+                Deck.Add(card.Queen);
+                Deck.Add(card.King);
             }
-            Tool.Shuffle(deck);
+            Tool.Shuffle(Deck);
+            foreach (card a in this.Deck) this.GameDeck.Push(a);
         }
-        public void MakeGameDeck()
+    }
+    class Dealer
+    {
+        public int score = new int();
+        public List<card> Hands = new List<card>();
+        public void Draw(CardDeck cardDeck)
         {
-            for (int i = 0; i < deck.Count; i++) GameDeck.Push(deck[i]);
+            card card = cardDeck.GameDeck.Pop();
+            this.Hands.Add(card);
+            this.score = Tool.Score(card, this.score);
+        }
+    }
+    class Player
+    {
+        public int Bet = new int();
+        public int score = new int();
+        public List<card> Hands = new List<card>();
+        public void Draw(CardDeck cardDeck)
+        {
+            card card = cardDeck.GameDeck.Pop();
+            this.Hands.Add(card);
+            this.score = Tool.Score(card, this.score);
         }
     }
     class Program
     {
         static void Main(string[] args)
         {
-            CardDeck deck = new CardDeck();
+            CardDeck cardDeck = new CardDeck();
+            Dealer dealer = new Dealer();
+            Player player = new Player();
 
-            deck.Build();    
-            foreach (card a in deck.deck) Console.WriteLine(a);
-            Console.WriteLine("----------stack version------------");
-            deck.MakeGameDeck();
+            cardDeck.Create();
+            dealer.Draw(cardDeck);
+            dealer.Draw(cardDeck);
+
+            for (int i = 0; i < dealer.Hands.Count; i++) Console.WriteLine(dealer.Hands[i]);
+            Console.WriteLine("score : {0}", dealer.score);
+
+            Console.WriteLine("---↑dealer---↓player---");
+
+            player.Draw(cardDeck);
+            player.Draw(cardDeck);
+
+            for (int i = 0; i < player.Hands.Count; i++) Console.WriteLine(player.Hands[i]);
+            Console.WriteLine("score : {0}", player.score);
+
+            /*    test -> draw more card 
+            Console.WriteLine("Do you want draw more card?(1 : yes    2 : no");
+            int answer = (Convert.ToInt32(Console.ReadLine()));
+            if (answer == 1) player.Draw(cardDeck);
+
+            for (int i = 0; i < dealer.Hands.Count; i++) Console.WriteLine(dealer.Hands[i]);
+            Console.WriteLine("score : {0}", dealer.score);
+
+            Console.WriteLine("---↑dealer---↓player---");
+
+            for (int i = 0; i < player.Hands.Count; i++) Console.WriteLine(player.Hands[i]);
+            Console.WriteLine("score : {0}", player.score);
+            */
         }
     }
 }
