@@ -82,7 +82,7 @@ namespace BlackJack
                 case (card.King):
                     score += 10;
                     break;
-            }
+            }  // score + card number
             return score;
         }
     }
@@ -125,14 +125,24 @@ namespace BlackJack
     }
     class Player
     {
+        public int Coin = new int();
         public int Bet = new int();
         public int score = new int();
         public List<card> Hands = new List<card>();
+        public Player(int _coin)
+        {
+            this.Coin = _coin;
+            Console.WriteLine("Your coin : {0:c}", this.Coin);
+        }
         public void Draw(CardDeck cardDeck)
         {
             card card = cardDeck.GameDeck.Pop();
             this.Hands.Add(card);
             this.score = Tool.Score(card, this.score);
+        }
+        public void Betting(int _Bet)
+        {
+            this.Bet = _Bet;
         }
     }
     class Program
@@ -141,8 +151,12 @@ namespace BlackJack
         {
             CardDeck cardDeck = new CardDeck();
             Dealer dealer = new Dealer();
-            Player player = new Player();
 
+            Console.WriteLine("Insert your coin");
+
+            Player player = new Player(Convert.ToInt32(Console.ReadLine())); // O
+
+            // test
             cardDeck.Create();
             dealer.Draw(cardDeck);
             dealer.Draw(cardDeck);
@@ -150,7 +164,7 @@ namespace BlackJack
             for (int i = 0; i < dealer.Hands.Count; i++) Console.WriteLine(dealer.Hands[i]);
             Console.WriteLine("score : {0}", dealer.score);
 
-            Console.WriteLine("---↑dealer---↓player---");
+            Console.WriteLine("\n---↑dealer---↓player---\n");
 
             player.Draw(cardDeck);
             player.Draw(cardDeck);
