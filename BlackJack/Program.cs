@@ -100,12 +100,12 @@ namespace BlackJack
         {
             Console.WriteLine("\n------------------------------------------------");
             Console.WriteLine("<Dealer>");
-            foreach (card a in this.dealer.Hands) Console.Write("{0} ", a);
-            Console.WriteLine("\nscore : {0}\n", this.dealer.score);
+            foreach (card a in this.dealer.Hands) Console.Write("[{0}]  ", a);
+            Console.WriteLine("\nscore : {0}", this.dealer.score);
 
-            Console.WriteLine("\nscore : {0}         Bet : {1}", this.player.score, this.player.Bet);
-            foreach (card a in this.player.Hands) Console.Write("{0} ", a);
-            Console.WriteLine("<Player>  money : {0}", this.player.Money);
+            Console.WriteLine("\nscore : {0}         Bet : {1:c}", this.player.score, this.player.Bet);
+            foreach (card a in this.player.Hands) Console.Write("[{0}]  ", a);
+            Console.WriteLine("\n<{0}>         Money : {1:c}\n", this.player.Name, this.player.Money);
         }
     }
     class CardDeck
@@ -144,16 +144,28 @@ namespace BlackJack
             this.Hands.Add(card);
             this.score = Tool.Score(card, this.score);
         }
+        public void ExtraCard(CardDeck cardDeack)
+        {
+            while (this.score <= 16) this.Draw(cardDeack);            
+        }
     }
     class Player
     {
+        public string Name;
         public int Money = new int();
         public int Bet = new int();
         public int score = new int();
         public List<card> Hands = new List<card>();
-        public Player(int _money)
+        public Player(string _name, int _money)
         {
+            this.Name = _name;
             this.Money = _money;
+        }
+        public void Betting()
+        {
+            Console.Write("Betting Amount(Enter in multiples of 10) : ");
+            this.Bet = Convert.ToInt32(Console.ReadLine());
+            this.Money -= this.Bet;
         }
         public void Draw(CardDeck cardDeck)
         {
@@ -161,9 +173,9 @@ namespace BlackJack
             this.Hands.Add(card);
             this.score = Tool.Score(card, this.score);
         }
-        public void Betting(int _Bet)
+        public void Hit(CardDeck cardDeck)
         {
-            this.Bet = _Bet;
+            this.Draw(cardDeck);
         }
     }
     class Program
@@ -173,39 +185,32 @@ namespace BlackJack
             CardDeck cardDeck = new CardDeck();
             Dealer dealer = new Dealer();
 
-            Console.WriteLine("Insert your coin");
+            Console.Write("Enter your name : ");
+            string name = Console.ReadLine();
+            Console.Write("Insert your money(Enter in multiples of 100) : ");
+            Player player = new Player(name, Convert.ToInt32(Console.ReadLine()));
 
-            Player player = new Player(Convert.ToInt32(Console.ReadLine())); // O
+            Game game = new Game(dealer, player);
+            
+            cardDeck.Create();
 
             // test
-            cardDeck.Create();
             dealer.Draw(cardDeck);
             dealer.Draw(cardDeck);
-
-            for (int i = 0; i < dealer.Hands.Count; i++) Console.WriteLine(dealer.Hands[i]);
-            Console.WriteLine("score : {0}", dealer.score);
-
-            Console.WriteLine("\n---↑dealer---↓player---\n");
-
+            
             player.Draw(cardDeck);
             player.Draw(cardDeck);
 
-            for (int i = 0; i < player.Hands.Count; i++) Console.WriteLine(player.Hands[i]);
-            Console.WriteLine("score : {0}", player.score);
+            game.Board();
 
             /*    test -> draw more card 
             Console.WriteLine("Do you want draw more card?(1 : yes    2 : no");
             int answer = (Convert.ToInt32(Console.ReadLine()));
             if (answer == 1) player.Draw(cardDeck);
 
-            for (int i = 0; i < dealer.Hands.Count; i++) Console.WriteLine(dealer.Hands[i]);
-            Console.WriteLine("score : {0}", dealer.score);
+            game.Board();
 
-            Console.WriteLine("---↑dealer---↓player---");
-
-            for (int i = 0; i < player.Hands.Count; i++) Console.WriteLine(player.Hands[i]);
-            Console.WriteLine("score : {0}", player.score);
-            */
+            //*/
         }
     }
 }
