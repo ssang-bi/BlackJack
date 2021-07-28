@@ -86,6 +86,28 @@ namespace BlackJack
             return score;
         }
     }
+    class Game
+    {
+        Dealer dealer;
+        Player player;
+
+        public Game(Dealer _dealer, Player _player)
+        {
+            this.dealer = _dealer;
+            this.player = _player;
+        }
+        public void Board()
+        {
+            Console.WriteLine("\n------------------------------------------------");
+            Console.WriteLine("<Dealer>");
+            foreach (card a in this.dealer.Hands) Console.Write("{0} ", a);
+            Console.WriteLine("\nscore : {0}\n", this.dealer.score);
+
+            Console.WriteLine("\nscore : {0}         Bet : {1}", this.player.score, this.player.Bet);
+            foreach (card a in this.player.Hands) Console.Write("{0} ", a);
+            Console.WriteLine("<Player>  money : {0}", this.player.Money);
+        }
+    }
     class CardDeck
     {
         public List<card> Deck = new List<card>();
@@ -125,14 +147,13 @@ namespace BlackJack
     }
     class Player
     {
-        public int Coin = new int();
+        public int Money = new int();
         public int Bet = new int();
         public int score = new int();
         public List<card> Hands = new List<card>();
-        public Player(int _coin)
+        public Player(int _money)
         {
-            this.Coin = _coin;
-            Console.WriteLine("Your coin : {0:c}", this.Coin);
+            this.Money = _money;
         }
         public void Draw(CardDeck cardDeck)
         {
