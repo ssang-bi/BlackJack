@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+// Add code -> When the dealer is blackjack, Running out of cards, Dealers give delays when pulling cards.
 namespace BlackJack
 {
     public enum card
@@ -96,6 +98,16 @@ namespace BlackJack
             this.dealer = _dealer;
             this.player = _player;
         }
+        public void InitialBoard()
+        {
+            Console.WriteLine("\n------------------------------------------------");
+            Console.WriteLine("<Dealer>");
+            Console.WriteLine("[{0}]  [****]", this.dealer.Hands[0]);
+
+            Console.WriteLine("\n<{0}>        Money : {1:c}", this.player.Name, this.player.Money);
+            foreach (card a in this.player.Hands) Console.Write("[{0}]  ", a);
+            Console.WriteLine("\nscore : {0}      Bet : {1:c}\n", this.player.score, this.player.Bet);
+        }
         public void Board()
         {
             Console.WriteLine("\n------------------------------------------------");
@@ -103,10 +115,11 @@ namespace BlackJack
             foreach (card a in this.dealer.Hands) Console.Write("[{0}]  ", a);
             Console.WriteLine("\nscore : {0}", this.dealer.score);
 
-            Console.WriteLine("\nscore : {0}         Bet : {1:c}", this.player.score, this.player.Bet);
-            foreach (card a in this.player.Hands) Console.Write("[{0}]  ", a);
-            Console.WriteLine("\n<{0}>         Money : {1:c}\n", this.player.Name, this.player.Money);
+            Console.WriteLine("\n<{0}>        Money : {1:c}", this.player.Name, this.player.Money);
+            foreach(card a in this.player.Hands) Console.Write("[{0}]  ", a);
+            Console.WriteLine("\nscore : {0}       Bet : {1:c}\n", this.player.score, this.player.Bet);
         }
+        
     }
     class CardDeck
     {
@@ -144,10 +157,6 @@ namespace BlackJack
             this.Hands.Add(card);
             this.score = Tool.Score(card, this.score);
         }
-        public void ExtraCard(CardDeck cardDeack)
-        {
-            while (this.score <= 16) this.Draw(cardDeack);            
-        }
     }
     class Player
     {
@@ -165,7 +174,12 @@ namespace BlackJack
         {
             Console.Write("Betting Amount(Enter in multiples of 10) : ");
             this.Bet = Convert.ToInt32(Console.ReadLine());
-            this.Money -= this.Bet;
+            if (this.Bet > this.Money)
+            {
+                Console.WriteLine("It's more than you have now.");
+                this.Betting();
+            }
+            else this.Money -= this.Bet;
         }
         public void Draw(CardDeck cardDeck)
         {
@@ -176,6 +190,11 @@ namespace BlackJack
         public void Hit(CardDeck cardDeck)
         {
             this.Draw(cardDeck);
+        }
+        public void AddMoney(string str)
+        {
+            if (str == "blackjack") this.Money += this.Bet * 2 + this.Bet / 2;
+            else this.Money += this.Bet * 2;
         }
     }
     class Program
@@ -195,22 +214,51 @@ namespace BlackJack
             cardDeck.Create();
 
             // test
-            dealer.Draw(cardDeck);
-            dealer.Draw(cardDeck);
-            
-            player.Draw(cardDeck);
-            player.Draw(cardDeck);
 
             game.Board();
 
-            /*    test -> draw more card 
-            Console.WriteLine("Do you want draw more card?(1 : yes    2 : no");
-            int answer = (Convert.ToInt32(Console.ReadLine()));
-            if (answer == 1) player.Draw(cardDeck);
+            player.Betting();
 
+            player.Draw(cardDeck);
+            dealer.Draw(cardDeck);
+            player.Draw(cardDeck);
+            dealer.Draw(cardDeck);
+
+            game.InitialBoard();
+
+            if (player.score == 21)
+            {
+                Console.WriteLine("Black Jack!");
+                player.AddMoney("blackjack");
+            }
+
+            Console.Write("HIT or STAY : ");
+            switch (Console.ReadLine())
+            {
+                case "HIT":
+                    player.Hit(cardDeck);
+                    break;
+                case "hit":
+                    player.Hit(cardDeck);
+                    break;
+                case "STAY":
+                    break;
+                case "stay":
+                    break;
+            }
             game.Board();
-
-            //*/
+            if (player.score > 21)
+            {
+                Console.WriteLine("BUST!");
+            }
+            else
+            {
+                while (dealer.score <= 16)
+                {
+                    dealer.Draw(cardDeck);
+                    game.Board();
+                }
+            }
         }
     }
 }
