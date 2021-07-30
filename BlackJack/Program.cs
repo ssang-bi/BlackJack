@@ -162,6 +162,14 @@ namespace BlackJack
             card card = cardDeck.GameDeck.Pop();
             this.Hands.Add(card);
             this.score = Tool.Score(card, this.score);
+            if (this.score > 21)
+            {
+                for (int i = 0; i < this.Hands.Count; i++)
+                {
+                    if (this.Hands[i] == card.Ace) this.score -= 10;
+                    break;
+                }
+            }
         }
     }
     class Player
@@ -202,6 +210,7 @@ namespace BlackJack
                 for (int i = 0; i < this.Hands.Count; i++)
                 {
                     if (this.Hands[i] == card.Ace) this.score -= 10;
+                    break;
                 }
             }
         }
