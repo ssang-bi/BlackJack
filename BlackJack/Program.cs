@@ -253,9 +253,9 @@ namespace BlackJack
             Game game = new Game(dealer, player);
 
             string run;
+
             cardDeck.Create();
 
-            // test
 
            while (player.Money > 0)
             {
@@ -310,6 +310,7 @@ namespace BlackJack
                     }
                     continue;
                 }
+
                 Console.WriteLine("\n!Player turn!\n");
 
                 while (true)
