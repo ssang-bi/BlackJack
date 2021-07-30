@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 
-// Add code -> When the dealer is blackjack, Running out of cards, Dealers give delays when pulling cards.
+// Add code -> Running out of cards, Repeat 'hit'
 namespace BlackJack
 {
     public enum card
@@ -39,6 +40,11 @@ namespace BlackJack
                 list[k] = list[n];
                 list[n] = value;
             }
+        }
+        public static void Clear<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            for (int i = 0; i < n; i++) list.RemoveAt(0);
         }
         public static int Score(card card, int score)
         {
@@ -186,6 +192,13 @@ namespace BlackJack
             card card = cardDeck.GameDeck.Pop();
             this.Hands.Add(card);
             this.score = Tool.Score(card, this.score);
+            if (this.score > 21)
+            {
+                for (int i = 0; i < this.Hands.Count; i++)
+                {
+                    if (this.Hands[i] == card.Ace) this.score -= 10;
+                }
+            }
         }
         public void Hit(CardDeck cardDeck)
         {
@@ -193,8 +206,22 @@ namespace BlackJack
         }
         public void AddMoney(string str)
         {
-            if (str == "blackjack") this.Money += this.Bet * 2 + this.Bet / 2;
-            else this.Money += this.Bet * 2;
+            switch (str)
+            {
+                case "blackjack":
+                    this.Money += this.Bet * 2 + this.Bet / 2;
+                    break;
+                case "win":
+                    this.Money += this.Bet * 2;
+                    break;
+                case "push":
+                    this.Money += this.Bet;
+                    break;
+            }
+        }
+        public void result()
+        {
+            Console.WriteLine("\nyour money : {0:c}", this.Money);
         }
     }
     class Program
@@ -210,55 +237,147 @@ namespace BlackJack
             Player player = new Player(name, Convert.ToInt32(Console.ReadLine()));
 
             Game game = new Game(dealer, player);
-            
+
+            string run;
             cardDeck.Create();
 
             // test
 
-            game.Board();
-
-            player.Betting();
-
-            player.Draw(cardDeck);
-            dealer.Draw(cardDeck);
-            player.Draw(cardDeck);
-            dealer.Draw(cardDeck);
-
-            game.InitialBoard();
-
-            if (player.score == 21)
+           while (player.Money > 0)
             {
-                Console.WriteLine("Black Jack!");
-                player.AddMoney("blackjack");
-            }
 
-            Console.Write("HIT or STAY : ");
-            switch (Console.ReadLine())
-            {
-                case "HIT":
-                    player.Hit(cardDeck);
-                    break;
-                case "hit":
-                    player.Hit(cardDeck);
-                    break;
-                case "STAY":
-                    break;
-                case "stay":
-                    break;
-            }
-            game.Board();
-            if (player.score > 21)
-            {
-                Console.WriteLine("BUST!");
-            }
-            else
-            {
-                while (dealer.score <= 16)
+                Tool.Clear(player.Hands);
+                Tool.Clear(dealer.Hands);
+
+                player.Bet = player.score = dealer.score = 0;
+
+                game.Board();
+
+                player.Betting();
+
+                player.Draw(cardDeck);
+                dealer.Draw(cardDeck);
+                player.Draw(cardDeck);
+                dealer.Draw(cardDeck);
+
+                game.InitialBoard();
+
+                if (dealer.score == 21)
                 {
-                    dealer.Draw(cardDeck);
+                    if (player.score == 21) player.Money += player.Bet;
+                    else Console.WriteLine("LOSE!");
+
+                    player.result();
+
+                    Console.WriteLine("\nDo you want play more?(yes or no)");
+                    run = Console.ReadLine();
+                    if (run == "no" || run == "NO") break;
+                    else continue;
+                }
+
+                if (player.score == 21)
+                {
+                    Console.WriteLine("Black Jack!");
+                    player.AddMoney("blackjack");
+
+                    player.result();
+
+                    Console.WriteLine("\nDo you want play more?(yes or no)");
+                    run = Console.ReadLine();
+                    if (run == "no" || run == "NO") break;
+                    else continue;
+                }
+              //  /*
+                Console.WriteLine("\n!Player turn!\n");
+                Console.Write("HIT or STAY : ");
+                switch (Console.ReadLine())
+                {
+                    case "HIT":
+                        player.Hit(cardDeck);
+                        break;
+                    case "hit":
+                        player.Hit(cardDeck);
+                        break;
+                    case "STAY":
+                        break;
+                    case "stay":
+                        break;
+                }
+                
+                game.Board();
+           //     */
+                /*
+                Console.WriteLine("\n!Player turn!\n");
+                Console.Write("HIT or STAY : ");
+                string state = Console.ReadLine();
+                while (state != "stay" || state != "STAY")
+                {
+                    switch (Console.ReadLine())
+                    {
+                        case "HIT":
+                            player.Hit(cardDeck);
+                            break;
+                        case "hit":
+                            player.Hit(cardDeck);
+                            break;
+                        case "STAY":
+                            break;
+                        case "stay":
+                            break;
+                    }
                     game.Board();
                 }
+                */
+                
+                if (player.score > 21)
+                {
+                    Console.WriteLine("PLAYER BUST!");
+
+                    player.result();
+
+                    Console.WriteLine("\nDo you want play more?(yes or no)");
+                    run = Console.ReadLine();
+                    if (run == "no" || run == "NO") break;
+                    else continue;
+                }
+                else
+                {
+                    if (dealer.score <= 16) Console.WriteLine("\n!Dealer turn!\n");
+                    while (dealer.score <= 16)
+                    {
+                        dealer.Draw(cardDeck);
+                        Thread.Sleep(1000);
+                        game.Board();
+                    }
+                }
+
+                if (dealer.score > 21)
+                {
+                    Console.WriteLine("DEALER BUST!");
+                    player.AddMoney("win");
+                }
+                else
+                {
+                    if (dealer.score == player.score)
+                    {
+                        Console.WriteLine("PUSH!");
+                        player.AddMoney("push");
+                    }
+                    else if (dealer.score > player.score) Console.WriteLine("LOSE!");
+                    else
+                    {
+                        Console.WriteLine("WIN!");
+                        player.AddMoney("win");
+                    }
+                }
+                
+                player.result();
+
+                Console.WriteLine("\nDo you want play more?(yes or no)");
+                run = Console.ReadLine();
+                if (run == "no" || run == "NO") break;
             }
+            if (player.Money < 0) Console.WriteLine("You lost all your money.");
         }
     }
 }
