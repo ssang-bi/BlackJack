@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-
-// Add code -> Running out of cards, Repeat 'hit'
 namespace BlackJack
 {
     public enum card
@@ -133,6 +131,7 @@ namespace BlackJack
         public Stack<card> GameDeck = new Stack<card>();
         public void Create()  // Create game Deck with stack
         {
+            this.Deck = new List<card>();
             for (int i = 0; i < 4; i++)
             {
                 Deck.Add(card.Ace);
@@ -150,7 +149,8 @@ namespace BlackJack
                 Deck.Add(card.King);
             }
             Tool.Shuffle(Deck);
-            foreach (card a in this.Deck) this.GameDeck.Push(a);
+            this.GameDeck = new Stack<card>(Deck);
+            //foreach (card a in this.Deck) this.GameDeck.Push(a);
         }
     }
     class Dealer
@@ -166,23 +166,28 @@ namespace BlackJack
     }
     class Player
     {
-        public string Name;
+        public string Name = "Player";
         public int Money = new int();
         public int Bet = new int();
         public int score = new int();
         public List<card> Hands = new List<card>();
         public Player(string _name, int _money)
         {
-            this.Name = _name;
+            if (_name != "") this.Name = _name;
             this.Money = _money;
         }
         public void Betting()
         {
-            Console.Write("Betting Amount(Enter in multiples of 10) : ");
+            Console.Write("Betting Amount(more than 2) : ");
             this.Bet = Convert.ToInt32(Console.ReadLine());
             if (this.Bet > this.Money)
             {
                 Console.WriteLine("It's more than you have now.");
+                this.Betting();
+            }
+            else if (this.Bet < 2)
+            {
+                Console.WriteLine("You need to bet at least 2");
                 this.Betting();
             }
             else this.Money -= this.Bet;
@@ -233,7 +238,7 @@ namespace BlackJack
 
             Console.Write("Enter your name : ");
             string name = Console.ReadLine();
-            Console.Write("Insert your money(Enter in multiples of 100) : ");
+            Console.Write("Insert your money : ");
             Player player = new Player(name, Convert.ToInt32(Console.ReadLine()));
 
             Game game = new Game(dealer, player);
@@ -245,6 +250,7 @@ namespace BlackJack
 
            while (player.Money > 0)
             {
+                if (cardDeck.GameDeck.Count <= 4) cardDeck.Create();
 
                 Tool.Clear(player.Hands);
                 Tool.Clear(dealer.Hands);
@@ -269,10 +275,14 @@ namespace BlackJack
 
                     player.result();
 
-                    Console.WriteLine("\nDo you want play more?(yes or no)");
-                    run = Console.ReadLine();
-                    if (run == "no" || run == "NO") break;
-                    else continue;
+                    if (player.Money == 0) Console.WriteLine("You lost all your money.");
+                    else
+                    {
+                        Console.WriteLine("\nDo you want play more?(yes or no)");
+                        run = Console.ReadLine();
+                        if (run == "no" || run == "NO") break;
+                    }
+                    continue;
                 }
 
                 if (player.score == 21)
@@ -282,52 +292,38 @@ namespace BlackJack
 
                     player.result();
 
-                    Console.WriteLine("\nDo you want play more?(yes or no)");
-                    run = Console.ReadLine();
-                    if (run == "no" || run == "NO") break;
-                    else continue;
+                    if (player.Money == 0) Console.WriteLine("You lost all your money.");
+                    else
+                    {
+                        Console.WriteLine("\nDo you want play more?(yes or no)");
+                        run = Console.ReadLine();
+                        if (run == "no" || run == "NO") break;
+                    }
+                    continue;
                 }
-              //  /*
                 Console.WriteLine("\n!Player turn!\n");
-                Console.Write("HIT or STAY : ");
-                switch (Console.ReadLine())
+
+                while (true)
                 {
-                    case "HIT":
-                        player.Hit(cardDeck);
-                        break;
-                    case "hit":
-                        player.Hit(cardDeck);
-                        break;
-                    case "STAY":
-                        break;
-                    case "stay":
-                        break;
-                }
-                
-                game.Board();
-           //     */
-                /*
-                Console.WriteLine("\n!Player turn!\n");
-                Console.Write("HIT or STAY : ");
-                string state = Console.ReadLine();
-                while (state != "stay" || state != "STAY")
-                {
-                    switch (Console.ReadLine())
+                    Console.Write("HIT or STAY : ");
+                    string str = Console.ReadLine();
+                    switch (str)
                     {
                         case "HIT":
                             player.Hit(cardDeck);
+                            game.InitialBoard();
                             break;
                         case "hit":
                             player.Hit(cardDeck);
+                            game.InitialBoard();
                             break;
                         case "STAY":
                             break;
                         case "stay":
                             break;
                     }
-                    game.Board();
+                    if (player.score > 21 || str == "STAY" || str == "stay") break;
                 }
-                */
                 
                 if (player.score > 21)
                 {
@@ -335,14 +331,20 @@ namespace BlackJack
 
                     player.result();
 
-                    Console.WriteLine("\nDo you want play more?(yes or no)");
-                    run = Console.ReadLine();
-                    if (run == "no" || run == "NO") break;
-                    else continue;
+                    if (player.Money == 0) Console.WriteLine("You lost all your money.");
+                    else
+                    {
+                        Console.WriteLine("\nDo you want play more?(yes or no)");
+                        run = Console.ReadLine();
+                        if (run == "no" || run == "NO") break;
+                    }
+                    continue;
                 }
                 else
                 {
-                    if (dealer.score <= 16) Console.WriteLine("\n!Dealer turn!\n");
+                    Console.WriteLine("\n!Dealer turn!\n");
+                    Thread.Sleep(1000);
+                    game.Board();
                     while (dealer.score <= 16)
                     {
                         dealer.Draw(cardDeck);
@@ -373,11 +375,16 @@ namespace BlackJack
                 
                 player.result();
 
-                Console.WriteLine("\nDo you want play more?(yes or no)");
-                run = Console.ReadLine();
-                if (run == "no" || run == "NO") break;
+                if (player.Money == 0) Console.WriteLine("You lost all your money.");
+                else
+                {
+                    Console.WriteLine("\nDo you want play more?(yes or no)");
+                    run = Console.ReadLine();
+                    if (run == "no" || run == "NO") break;
+                }
             }
-            if (player.Money < 0) Console.WriteLine("You lost all your money.");
+            Console.WriteLine("\nPress any key to exit.");
+            Console.ReadKey();
         }
     }
 }
