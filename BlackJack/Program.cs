@@ -270,9 +270,9 @@ namespace BlackJack
 
            while (player.Money > 0)
             {
-                if (cardDeck.GameDeck.Count <= 4)
+                if (cardDeck.GameDeck.Count <= 10)
                 {
-                    Console.WriteLine("\nBe short of cards! \nCreate new card deck!\n");
+                    Console.WriteLine("\nThere are only {0} cards left.! \nCreate new card deck!\n", cardDeck.GameDeck.Count);
                     cardDeck.Create();
                     Thread.Sleep(1000);
                 }
