@@ -39,11 +39,6 @@ namespace BlackJack
                 list[n] = value;
             }
         }
-        public static void Clear<T>(this IList<T> list)
-        {
-            int n = list.Count;
-            for (int i = 0; i < n; i++) list.RemoveAt(0);
-        }
         public static int Score(card card, int score)
         {
             switch (card)
@@ -157,19 +152,27 @@ namespace BlackJack
     {
         public int score = new int();
         public List<card> Hands = new List<card>();
+        int AceCount = new int();
         public void Draw(CardDeck cardDeck)
         {
             card card = cardDeck.GameDeck.Pop();
             this.Hands.Add(card);
+            if (card == card.Ace) this.AceCount++;
             this.score = Tool.Score(card, this.score);
             if (this.score > 21)
             {
-                for (int i = 0; i < this.Hands.Count; i++)
+                if (this.AceCount > 0)
                 {
-                    if (this.Hands[i] == card.Ace) this.score -= 10;
-                    break;
+                    this.score -= 10;
+                    this.AceCount--;
                 }
             }
+        }
+        public void Clear()
+        {
+            this.AceCount = 0;
+            int n = this.Hands.Count;
+            for (int i = 0; i < n; i++) this.Hands.RemoveAt(0);
         }
     }
     class Player
@@ -184,6 +187,7 @@ namespace BlackJack
             if (_name != "") this.Name = _name;
             this.Money = _money;
         }
+        int AceCount = new int();
         public void Betting()
         {
             Console.Write("Betting Amount(more than 2) : ");
@@ -204,19 +208,26 @@ namespace BlackJack
         {
             card card = cardDeck.GameDeck.Pop();
             this.Hands.Add(card);
+            if (card == card.Ace) this.AceCount++;
             this.score = Tool.Score(card, this.score);
             if (this.score > 21)
             {
-                for (int i = 0; i < this.Hands.Count; i++)
+                if (this.AceCount > 0)
                 {
-                    if (this.Hands[i] == card.Ace) this.score -= 10;
-                    break;
+                    this.score -= 10;
+                    this.AceCount--;
                 }
             }
         }
         public void Hit(CardDeck cardDeck)
         {
             this.Draw(cardDeck);
+        }
+        public void Clear()
+        {
+            this.AceCount = 0;
+            int n = this.Hands.Count;
+            for (int i = 0; i < n; i++) this.Hands.RemoveAt(0);
         }
         public void AddMoney(string str)
         {
@@ -259,10 +270,15 @@ namespace BlackJack
 
            while (player.Money > 0)
             {
-                if (cardDeck.GameDeck.Count <= 4) cardDeck.Create();
+                if (cardDeck.GameDeck.Count <= 4)
+                {
+                    Console.WriteLine("\nBe short of cards! \nCreate new card deck!\n");
+                    cardDeck.Create();
+                    Thread.Sleep(1000);
+                }
 
-                Tool.Clear(player.Hands);
-                Tool.Clear(dealer.Hands);
+                player.Clear();
+                dealer.Clear();
 
                 player.Bet = player.score = dealer.score = 0;
 
@@ -279,7 +295,12 @@ namespace BlackJack
 
                 if (dealer.score == 21)
                 {
-                    if (player.score == 21) player.Money += player.Bet;
+                    Console.WriteLine("The dealer is Blackjack.");
+                    if (player.score == 21)
+                    {
+                        Console.WriteLine("PUSH!");
+                        player.Money += player.Bet;
+                    }
                     else Console.WriteLine("LOSE!");
 
                     player.result();
@@ -312,7 +333,6 @@ namespace BlackJack
                 }
 
                 Console.WriteLine("\n!Player turn!\n");
-
                 while (true)
                 {
                     Console.Write("HIT or STAY : ");
